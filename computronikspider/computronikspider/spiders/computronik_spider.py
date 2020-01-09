@@ -35,9 +35,9 @@ class ComputronikSpiderSpider(scrapy.Spider):
                     # product_name
                     product_name = some_text.strip()
 
-                    # product_price
+                    # product_price (including \xa0, i.e. non-breaking space)
                     some_text = product.css('.proper::text')[0].extract()
-                    product_price = some_text.strip().replace('\xa0', '')
+                    product_price = "".join(some_text.split()
 
                     # product_availability
                     some_text = product.css('.bdg-label::text')[0].extract()
