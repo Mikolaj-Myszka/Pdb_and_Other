@@ -1,13 +1,26 @@
 # -*- coding: utf-8 -*-
 
 import scrapy
+from scrapy.loader.processors import TakeFirst
 from komputronik_products.itemloaders import KomputronikItemLoader
 from komputronik_products.items import KomputronikProductsItem
-from scrapy.loader.processors import TakeFirst, MapCompose, Join, Compose
 
 
 class KomputronikProductSpider(scrapy.Spider):
     name = 'komputronik_product'
+    """
+    start_urls = [
+        'https://www.komputronik.pl/category/5022/laptopy.html?pr10%5B%5D=0\
+            &pr10%5B%5D=1700&prod%5B%5D=23&filter=1&showBuyActiveOnly=0\
+            &sort=1&by=f_price_10&showProducts=1',
+    ]
+
+    page_number = 1
+    print(page_number)
+    last_page = 0
+    all_products_links = []
+    i = 0
+    """
     start_urls = [
         'https://www.komputronik.pl/product/633622/lenovo-ideapad-330-15arr-\
             81d200n7pb-120gb-ssd.html',
@@ -16,27 +29,51 @@ class KomputronikProductSpider(scrapy.Spider):
         'https://www.komputronik.pl/product/666766/lenovo-ideapad-s145-14iwl-\
             81mu009tpb-.html',
     ]
+    
 
     def parse(self, response):
+        """
+        if self.page_number == 1:
+            self.last_page = int(response.css('.pgn-static+ li a::text')[0].extract())
+            print('last_page:', self.last_page)
+        
+        
+        if self.page_number <= self.last_page:
+            page_links = response.xpath('//div[@class="pe2-head"]//a/@href').extract()
+            #print(page_links)
+            self.all_products_links.extend(page_links)
+            # print(self.all_products_links)
+            print(len(self.all_products_links))
+
+            self.page_number += 1
+            print(self.page_number)
+            next_page = self.start_urls[0] + '&p=' + str(self.page_number)
+            if self.page_number == self.last_page:
+                next_page = self.all_products_links[self.i]
+                yield response.follow(next_page, callback=self.parse)
+            yield response.follow(next_page, callback=self.parse)
+        
+        else:
+            item_loader = KomputronikItemLoader(
+                item=KomputronikProductsItem(), response=response
+            )
+            item_loader.add_xpath('name', '//h1/text()')
+            item_loader.add_xpath('price', '//span[@class="proper"]/text()', TakeFirst())
+            item_loader.add_xpath('availability', '//a[@class="tooltip-wrap pretty"]/text()', re='Wysyłamy.* | Produkt.*')
+            
+            if self.i < len(self.all_products_links)-1:
+                self.i += 1
+                next_page = self.all_products_links[self.i]
+                item_loader.load_item()
+                yield response.follow(next_page, callback=self.parse)
+        """
         
         item_loader = KomputronikItemLoader(
             item=KomputronikProductsItem(), response=response
         )
-        
-        # name = response.xpath('//h1/text()')[0].extract().strip()
-        
         item_loader.add_xpath('name', '//h1/text()')
-        
-        # price = "".join(response.xpath(
-        #     '//span[@class="proper"]/text()')[0].extract().split()
-        # )
-        
         item_loader.add_xpath('price', '//span[@class="proper"]/text()', TakeFirst())
-        
-        # availability = response.xpath(
-        #     '//a[@class="tooltip-wrap pretty"]/text()'
-        # )[1].extract().strip()
-        
-        item_loader.add_xpath('availability', '//a[@class="tooltip-wrap pretty"]/text()', re='Wysyłamy .* | Produkt .*')
-        
+        item_loader.add_xpath('availability', '//a[@class="tooltip-wrap pretty"]/text()', re='Wysyłamy.* | Produkt.*')
         return item_loader.load_item()
+
+# https://stackoverflow.com/questions/29749854/scrapy-calling-another-url
