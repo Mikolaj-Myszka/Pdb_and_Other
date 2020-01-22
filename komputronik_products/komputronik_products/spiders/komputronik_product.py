@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import scrapy
-from scrapy.loader import ItemLoader
+from komputronik_products.itemloaders import KomputronikItemLoader
 from komputronik_products.items import KomputronikProductsItem
+from scrapy.loader.processors import TakeFirst, MapCompose, Join, Compose
 
 
 class KomputronikProductSpider(scrapy.Spider):
@@ -17,21 +18,25 @@ class KomputronikProductSpider(scrapy.Spider):
     ]
 
     def parse(self, response):
-        item_loader = ItemLoader(
+        
+        item_loader = KomputronikItemLoader(
             item=KomputronikProductsItem(), response=response
         )
-        name = response.xpath('//h1/text()')[0].extract().strip()
-        item_loader.add_value('name', name)
-        price = "".join(response.xpath(
-            '//span[@class="proper"]/text()')[0].extract().split()
-        )
-        item_loader.add_value('price', price)
-        availability = response.xpath(
-            '//a[@class="tooltip-wrap pretty"]/text()'
-        )[1].extract().strip()
-        item_loader.add_value('availability', availability)
+        
+        # name = response.xpath('//h1/text()')[0].extract().strip()
+        
+        item_loader.add_xpath('name', '//h1/text()')
+        
+        # price = "".join(response.xpath(
+        #     '//span[@class="proper"]/text()')[0].extract().split()
+        # )
+        
+        item_loader.add_xpath('price', '//span[@class="proper"]/text()', TakeFirst())
+        
+        # availability = response.xpath(
+        #     '//a[@class="tooltip-wrap pretty"]/text()'
+        # )[1].extract().strip()
+        
+        item_loader.add_xpath('availability', '//a[@class="tooltip-wrap pretty"]/text()', re='Wysyłamy .* | Produkt .*')
+        
         return item_loader.load_item()
-
-        ['the', 'prevoius']
-        ['The', 'Previus']
-        'ThePrevius'
