@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from scrapy.exporters import CsvItemExporter
 
 
@@ -20,7 +18,11 @@ class KomputronikProductsPipeline(object):
 
     def _exporter_for_item(self, item):
         product_name = item['name'][0]
-        exporter = CsvItemExporter(self.product_file, include_headers_line=False)
+        exporter = CsvItemExporter(
+            self.product_file,
+            include_headers_line=False
+        )
+        exporter.fields_to_export = ['name', 'price', 'availability']
         exporter.start_exporting()
         self.product_to_exporter[product_name] = exporter
         return self.product_to_exporter[product_name]

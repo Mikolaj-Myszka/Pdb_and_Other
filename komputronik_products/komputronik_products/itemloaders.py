@@ -5,6 +5,7 @@ def name_availability_processor(self, values):
     for v in values:
         yield v.strip()
 
+
 def price_processor(self, values):
     for v in values:
         yield "".join(v.split())
