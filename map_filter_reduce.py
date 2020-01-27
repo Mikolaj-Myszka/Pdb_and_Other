@@ -35,6 +35,7 @@ print(avg)
 f = list(filter(lambda x: x > avg, data))
 print(f)
 
+
 # Second example: Remove missing data
 countries = ["", "Brasil", "", "Denmark"]
 
