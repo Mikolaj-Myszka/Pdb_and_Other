@@ -22,6 +22,7 @@ logger.critical("Critical mode.")
 print(logger.level)
 """
 
+
 def quadratic_formula(a, b, c):
     """Return the solution to the equation ax^2 + bx + c = 0."""
     logger.info("quadratic_formula({0}, {1}, {2})".format(a, b, c))
